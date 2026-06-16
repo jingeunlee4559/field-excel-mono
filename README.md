@@ -70,7 +70,7 @@ uvicorn app.main:app --reload --port 8000
 
 ## 📌 주요 기능
 
-- 📄 원천자료(사진, PDF, 영수증 등) 업로드
+- 📄 영수증 업로드
 - 🔍 PaddleOCR 기반 텍스트 추출
 - 🤖 LLM을 통한 구조화 JSON 변환
 - ✅ 규칙 기반 정합성 검증 (누락값, 계산 오류 등)
