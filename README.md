@@ -24,7 +24,7 @@ field-excel-mono/
 |------|------|
 | 프론트엔드 | React + Vite, Tailwind CSS, Axios |
 | 백엔드 | Node.js + Express, JWT + bcrypt, Multer |
-| AI 서버 | FastAPI + Python, PaddleOCR, openpyxl, PyMuPDF + Pillow |
+| AI 서버 | FastAPI + Python, PaddleOCR, openpyxl, PyMuPDF|
 | LLM | 로컬 LLM |
 | 데이터베이스 | MySQL |
 | 버전 관리 | Git + GitHub |
@@ -38,43 +38,6 @@ field-excel-mono/
 | frontend | http://localhost:3000 | React + Vite |
 | backend | http://localhost:8080 | Node.js + Express |
 | ai-server | http://localhost:8000 | FastAPI + Python |
-
----
-
-## ⚙️ 환경변수
-
-각 서비스 폴더의 `.env.example`을 복사하여 `.env`로 사용하세요.
-
-### frontend `.env`
-```dotenv
-VITE_API_BASE=http://localhost:8080/api
-VITE_AI_BASE=http://localhost:8000
-```
-
-### backend `.env`
-```dotenv
-PORT=8080
-
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=field_excel
-DB_USER=
-DB_PASSWORD=
-
-JWT_SECRET=
-AI_SERVER_URL=http://localhost:8000
-```
-
-### ai-server `.env`
-```dotenv
-BACKEND_URL=http://localhost:8080
-
-DB_HOST=localhost
-DB_PORT=3306
-DB_NAME=field_excel
-DB_USER=
-DB_PASSWORD=
-```
 
 ---
 
