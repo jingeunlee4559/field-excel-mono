@@ -1,0 +1,11 @@
+{
+  "min_confidence": 0.8,
+  "required_fields": ["expense_date", "vendor_name", "total_amount"],
+  "rules": [
+    {"ruleCode": "REQUIRED_FIELD", "ruleName": "필수값 검증", "ruleType": "REQUIRED", "severity": "ERROR"},
+    {"ruleCode": "LOW_CONFIDENCE", "ruleName": "OCR/AI 신뢰도 검증", "ruleType": "CONFIDENCE_CHECK", "severity": "WARNING"},
+    {"ruleCode": "ITEM_SUM_TOTAL_CHECK", "ruleName": "상세 품목 합계 검증", "ruleType": "AMOUNT_CHECK", "severity": "WARNING"},
+    {"ruleCode": "SUPPLY_TAX_TOTAL_CHECK", "ruleName": "공급가액+부가세 검증", "ruleType": "AMOUNT_CHECK", "severity": "WARNING"},
+    {"ruleCode": "OCR_TEXT_EMPTY", "ruleName": "OCR 텍스트 추출 실패", "ruleType": "FILE_CHECK", "severity": "ERROR"}
+  ]
+}

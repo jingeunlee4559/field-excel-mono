@@ -1,0 +1,8 @@
+{
+  "types": [
+    {"document_type": "TRANSPORT_RECEIPT", "keywords": ["택시", "KTX", "SRT", "승차권", "운임", "통행료", "주차요금"]},
+    {"document_type": "CARD_RECEIPT", "keywords": ["카드승인", "승인번호", "카드번호", "일시불"]},
+    {"document_type": "ITEM_RECEIPT", "keywords": ["상품명", "품명", "수량", "단가", "판매합계", "부가세"]},
+    {"document_type": "RECEIPT", "keywords": ["영수증", "매출전표", "합계", "결제금액"]}
+  ]
+}

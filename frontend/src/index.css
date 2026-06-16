@@ -1,0 +1,18 @@
+:root {
+    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-weight: 400;
+
+    /* light/dark 모드 자동 감지를 위한 설정으로 유지하는 것이 좋습니다. */
+    color-scheme: light dark;
+
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+    /* body의 기본 margin을 제거하는 것은 좋은 초기화(reset) 코드입니다. */
+    margin: 0;
+}
