@@ -22,7 +22,7 @@ const UploadPreviewPanel = ({
         <div>
           <h3 className="text-base font-extrabold text-slate-950">원본 미리보기</h3>
           <p className="mt-1 text-xs font-bold text-slate-400">
-            여러 이미지는 슬라이드로 넘겨보며 원본 비율로 확인할 수 있습니다.
+            이미지와 PDF를 슬라이드로 넘겨보며 원본 비율로 확인할 수 있습니다.
           </p>
         </div>
 

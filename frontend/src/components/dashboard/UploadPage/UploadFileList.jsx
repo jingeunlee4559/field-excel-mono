@@ -49,7 +49,7 @@ const UploadFileList = ({ files, previews, activeIndex, onSelectFile, onRemoveFi
                   <p className="truncate text-sm font-extrabold text-slate-900">{file.name}</p>
                   <p className="mt-1 text-xs font-bold text-slate-400">{formatFileSize(file.size)}</p>
                   <p className="mt-2 text-[11px] font-extrabold text-slate-400">
-                    {preview?.type === 'image' ? '이미지' : 'PDF'}
+                    {preview?.type === 'image' ? '이미지' : preview?.type === 'pdf' ? 'PDF 미리보기 가능' : '지원 안 됨'}
                   </p>
                 </div>
 

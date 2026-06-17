@@ -12,7 +12,7 @@ const UploadViewerModal = ({
   onPrev,
   onNext,
 }) => {
-  if (!open || activePreview?.type !== 'image') return null;
+  if (!open || !activePreview || !['image', 'pdf'].includes(activePreview.type)) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/95 p-4">
@@ -21,7 +21,7 @@ const UploadViewerModal = ({
           <div className="min-w-0">
             <p className="truncate text-sm font-extrabold">{activeFile?.name}</p>
             <p className="text-xs font-bold text-white/60">
-              {activeIndex + 1} / {files.length} · {formatFileSize(activeFile?.size)}
+              {activeIndex + 1} / {files.length} · {formatFileSize(activeFile?.size)} · {activePreview.type === 'pdf' ? 'PDF' : '이미지'}
             </p>
           </div>
 

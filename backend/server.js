@@ -5,6 +5,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const fs = require('fs');
+const path = require('path');
 
 const pool = require('./config/db');
 const {
@@ -70,23 +71,58 @@ app.use((req, res, next) => {
     req.path.startsWith('/templates-storage') ||
     req.path.startsWith('/results-storage')
   ) {
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    res.setHeader(
-      'Access-Control-Allow-Origin',
-      process.env.FRONTEND_URL || 'http://localhost:3000'
-    );
+    setStaticCorsHeaders(req, res);
   }
 
   next();
 });
 
+const getAllowedFrontendOrigins = () => {
+  const configuredOrigins = String(process.env.FRONTEND_URL || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  return Array.from(
+    new Set([
+      ...configuredOrigins,
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:5173',
+    ])
+  );
+};
+
+const ALLOWED_FRONTEND_ORIGINS = getAllowedFrontendOrigins();
+const DEFAULT_FRONTEND_ORIGIN = ALLOWED_FRONTEND_ORIGINS[0] || 'http://localhost:3000';
+const FRAME_ANCESTORS = [`'self'`, ...ALLOWED_FRONTEND_ORIGINS].join(' ');
+
+const setStaticCorsHeaders = (req, res) => {
+  const requestOrigin = req.headers.origin;
+  const allowOrigin = ALLOWED_FRONTEND_ORIGINS.includes(requestOrigin)
+    ? requestOrigin
+    : DEFAULT_FRONTEND_ORIGIN;
+
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  res.setHeader('Access-Control-Allow-Origin', allowOrigin);
+  res.setHeader('Vary', 'Origin');
+  // 프론트 개발 서버(localhost:3000/5173)에서 PDF iframe 미리보기가 막히지 않도록 정적 파일만 frame 허용.
+  res.removeHeader('X-Frame-Options');
+  res.setHeader('Content-Security-Policy', `frame-ancestors ${FRAME_ANCESTORS}`);
+};
+
 const staticOptions = {
-  setHeaders: (res) => {
+  setHeaders: (res, filePath) => {
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    res.setHeader(
-      'Access-Control-Allow-Origin',
-      process.env.FRONTEND_URL || 'http://localhost:3000'
-    );
+    res.removeHeader('X-Frame-Options');
+    res.setHeader('Content-Security-Policy', `frame-ancestors ${FRAME_ANCESTORS}`);
+
+    if (path.extname(filePath || '').toLowerCase() === '.pdf') {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(path.basename(filePath))}`);
+      res.setHeader('Accept-Ranges', 'bytes');
+    }
   },
 };
 

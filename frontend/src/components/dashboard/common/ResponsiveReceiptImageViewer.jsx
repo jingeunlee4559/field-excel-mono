@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { FiImage, FiMaximize2, FiMinus, FiPlus, FiRotateCw, FiX } from 'react-icons/fi';
+import { FiFileText, FiImage, FiMaximize2, FiMinus, FiPlus, FiRotateCw, FiX } from 'react-icons/fi';
 
 const MIN_ZOOM = 0.6;
 const MAX_ZOOM = 3.2;
@@ -13,6 +13,20 @@ const normalizeRotation = (rotation) => {
 };
 
 const isRightAngleRotation = (rotation) => normalizeRotation(rotation) % 180 !== 0;
+
+const normalizePreviewTarget = (value = '') => String(value || '').toLowerCase().split('?')[0].split('#')[0];
+
+const isPdfSource = ({ imageUrl = '', fileName = '' }) => {
+  const cleanName = normalizePreviewTarget(fileName);
+  const cleanUrl = normalizePreviewTarget(imageUrl);
+  return cleanName.endsWith('.pdf') || cleanUrl.endsWith('.pdf') || cleanUrl.includes('.pdf/');
+};
+
+const buildPdfPreviewUrl = (url) => {
+  if (!url) return '';
+  if (url.includes('#')) return url;
+  return `${url}#toolbar=1&navpanes=0&view=FitH`;
+};
 
 const getImageLayout = ({ naturalSize, viewerSize, zoom, rotation, mode = 'width' }) => {
   const naturalWidth = Number(naturalSize.width) || 0;
@@ -139,6 +153,29 @@ const ImageCanvas = ({ imageUrl, fileName, rotation, layout, onImageLoad, emptyM
   );
 };
 
+const PdfCanvas = ({ fileUrl, fileName, emptyMinHeight = '420px' }) => {
+  const pdfUrl = buildPdfPreviewUrl(fileUrl);
+
+  if (!pdfUrl) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center text-center text-slate-400" style={{ minHeight: emptyMinHeight }}>
+        <FiFileText className="text-5xl" />
+        <p className="mt-3 text-sm font-bold">표시할 PDF 파일이 없습니다.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative h-full min-h-full w-full overflow-hidden rounded-2xl bg-white ring-1 ring-slate-200" style={{ minHeight: emptyMinHeight }}>
+      <iframe
+        title={fileName || 'PDF 미리보기'}
+        src={pdfUrl}
+        className="h-full min-h-full w-full border-0 bg-white"
+      />
+    </div>
+  );
+};
+
 const ResponsiveReceiptImageViewer = ({
   imageUrl,
   fileName,
@@ -153,6 +190,8 @@ const ResponsiveReceiptImageViewer = ({
   const [naturalSize, setNaturalSize] = useState({ width: 0, height: 0 });
   const [viewerRef, viewerSize] = useElementSize(`${imageUrl || ''}-${modalOpen ? 'modal-open' : 'modal-closed'}`);
   const [modalViewerRef, modalViewerSize] = useElementSize(`${imageUrl || ''}-${modalOpen ? 'modal' : 'inline'}`);
+
+  const isPdf = isPdfSource({ imageUrl, fileName });
 
   useEffect(() => {
     setNaturalSize({ width: 0, height: 0 });
@@ -190,22 +229,31 @@ const ResponsiveReceiptImageViewer = ({
     <>
       <div className={`min-w-0 overflow-hidden rounded-3xl bg-slate-50 p-3 ring-1 ring-slate-100 ${className}`}>
         <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <button type="button" onClick={decreaseZoom} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">
-              <FiMinus />
-            </button>
-            <span className="min-w-0 rounded-full bg-white px-3 py-2 text-center text-xs font-black text-slate-500 ring-1 ring-slate-200">
-              화면맞춤 기준 · {zoomPercent}%
-            </span>
-            <button type="button" onClick={increaseZoom} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">
-              <FiPlus />
-            </button>
-          </div>
+          {isPdf ? (
+            <div className="flex min-w-0 items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black text-slate-500 ring-1 ring-slate-200">
+              <FiFileText className="shrink-0" />
+              <span className="truncate">PDF 원본 미리보기</span>
+            </div>
+          ) : (
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <button type="button" onClick={decreaseZoom} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">
+                <FiMinus />
+              </button>
+              <span className="min-w-0 rounded-full bg-white px-3 py-2 text-center text-xs font-black text-slate-500 ring-1 ring-slate-200">
+                화면맞춤 기준 · {zoomPercent}%
+              </span>
+              <button type="button" onClick={increaseZoom} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">
+                <FiPlus />
+              </button>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
-            <button type="button" onClick={resetZoom} className="h-10 rounded-2xl bg-white px-3 text-xs font-black text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">
-              맞춤
-            </button>
+            {!isPdf && (
+              <button type="button" onClick={resetZoom} className="h-10 rounded-2xl bg-white px-3 text-xs font-black text-slate-600 shadow-sm ring-1 ring-slate-200 hover:bg-slate-50">
+                맞춤
+              </button>
+            )}
             <button type="button" onClick={() => setModalOpen(true)} className="h-10 rounded-2xl bg-slate-950 px-3 text-xs font-black text-white shadow-sm hover:bg-blue-600">
               <FiMaximize2 className="inline" /> 크게보기
             </button>
@@ -214,15 +262,19 @@ const ResponsiveReceiptImageViewer = ({
 
         <div
           ref={viewerRef}
-          className={`relative flex h-[52vh] min-h-[320px] min-w-0 items-start justify-center overflow-y-auto ${inlineOverflowX} rounded-2xl bg-white p-3 ring-1 ring-slate-200 sm:h-[62vh] sm:min-h-[440px] xl:h-[calc(100%-58px)] xl:min-h-0`}
+          className={`relative flex h-[52vh] min-h-[320px] min-w-0 items-start justify-center overflow-y-auto ${isPdf ? 'overflow-x-hidden' : inlineOverflowX} rounded-2xl bg-white p-3 ring-1 ring-slate-200 sm:h-[62vh] sm:min-h-[440px] xl:h-[calc(100%-58px)] xl:min-h-0`}
         >
-          <ImageCanvas
-            imageUrl={imageUrl}
-            fileName={fileName}
-            rotation={rotation}
-            layout={inlineLayout}
-            onImageLoad={handleImageLoad}
-          />
+          {isPdf ? (
+            <PdfCanvas fileUrl={imageUrl} fileName={fileName} emptyMinHeight="100%" />
+          ) : (
+            <ImageCanvas
+              imageUrl={imageUrl}
+              fileName={fileName}
+              rotation={rotation}
+              layout={inlineLayout}
+              onImageLoad={handleImageLoad}
+            />
+          )}
         </div>
       </div>
 
@@ -231,38 +283,48 @@ const ResponsiveReceiptImageViewer = ({
           <div className="flex h-full max-h-[96vh] w-full max-w-7xl flex-col overflow-hidden rounded-3xl bg-white shadow-2xl">
             <div className="flex flex-col gap-3 border-b border-slate-100 p-3 sm:flex-row sm:items-center sm:justify-between sm:p-4">
               <div className="min-w-0">
-                <p className="truncate text-sm font-black text-slate-950">{fileName || '원본 이미지'}</p>
-                <p className="mt-1 text-xs font-bold text-slate-400">화면맞춤 기준 {zoomPercent}%</p>
+                <p className="truncate text-sm font-black text-slate-950">{fileName || (isPdf ? '원본 PDF' : '원본 이미지')}</p>
+                <p className="mt-1 text-xs font-bold text-slate-400">
+                  {isPdf ? '브라우저 PDF 뷰어로 표시 중' : `화면맞춤 기준 ${zoomPercent}%`}
+                </p>
               </div>
 
-              <div className="grid grid-cols-5 gap-2 sm:flex sm:items-center">
-                <button type="button" onClick={decreaseZoom} className="flex h-10 min-w-0 items-center justify-center rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50">
-                  <FiMinus />
-                </button>
-                <button type="button" onClick={resetZoom} className="flex h-10 min-w-0 items-center justify-center rounded-2xl border border-slate-200 px-3 text-xs font-black text-slate-600 hover:bg-slate-50">
-                  맞춤
-                </button>
-                <button type="button" onClick={increaseZoom} className="flex h-10 min-w-0 items-center justify-center rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50">
-                  <FiPlus />
-                </button>
-                <button type="button" onClick={rotateImage} className="flex h-10 min-w-0 items-center justify-center rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50">
-                  <FiRotateCw />
-                </button>
-                <button type="button" onClick={() => setModalOpen(false)} className="flex h-10 min-w-0 items-center justify-center rounded-2xl bg-slate-950 text-white hover:bg-blue-600">
+              <div className={`grid gap-2 ${isPdf ? 'grid-cols-1' : 'grid-cols-5'} sm:flex sm:items-center`}>
+                {!isPdf && (
+                  <>
+                    <button type="button" onClick={decreaseZoom} className="flex h-10 min-w-0 items-center justify-center rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50">
+                      <FiMinus />
+                    </button>
+                    <button type="button" onClick={resetZoom} className="flex h-10 min-w-0 items-center justify-center rounded-2xl border border-slate-200 px-3 text-xs font-black text-slate-600 hover:bg-slate-50">
+                      맞춤
+                    </button>
+                    <button type="button" onClick={increaseZoom} className="flex h-10 min-w-0 items-center justify-center rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50">
+                      <FiPlus />
+                    </button>
+                    <button type="button" onClick={rotateImage} className="flex h-10 min-w-0 items-center justify-center rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-50">
+                      <FiRotateCw />
+                    </button>
+                  </>
+                )}
+                <button type="button" onClick={() => setModalOpen(false)} className="flex h-10 min-w-0 items-center justify-center rounded-2xl bg-slate-950 px-4 text-white hover:bg-blue-600">
                   <FiX />
                 </button>
               </div>
             </div>
 
-            <div ref={modalViewerRef} className={`min-h-0 flex-1 overflow-y-auto ${modalOverflowX} bg-slate-100 p-3 sm:p-4`}>
-              <ImageCanvas
-                imageUrl={imageUrl}
-                fileName={fileName}
-                rotation={rotation}
-                layout={modalLayout}
-                onImageLoad={handleImageLoad}
-                emptyMinHeight="520px"
-              />
+            <div ref={modalViewerRef} className={`min-h-0 flex-1 ${isPdf ? 'overflow-hidden' : `overflow-y-auto ${modalOverflowX}`} bg-slate-100 p-3 sm:p-4`}>
+              {isPdf ? (
+                <PdfCanvas fileUrl={imageUrl} fileName={fileName} emptyMinHeight="100%" />
+              ) : (
+                <ImageCanvas
+                  imageUrl={imageUrl}
+                  fileName={fileName}
+                  rotation={rotation}
+                  layout={modalLayout}
+                  onImageLoad={handleImageLoad}
+                  emptyMinHeight="520px"
+                />
+              )}
             </div>
           </div>
         </div>

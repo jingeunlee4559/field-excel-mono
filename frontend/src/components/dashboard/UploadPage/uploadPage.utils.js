@@ -48,25 +48,44 @@ export const formatFileSize = (size) => {
   return `${(size / 1024).toFixed(1)}KB`;
 };
 
-export const isImageFile = (file) => file?.type?.startsWith('image/');
+export const getFileName = (file) => String(file?.name || file?.originalFileName || file?.fileName || '');
+
+export const isImageFile = (file) => {
+  const lowerName = getFileName(file).toLowerCase();
+  return Boolean(file?.type?.startsWith?.('image/')) || /\.(jpg|jpeg|png|webp)$/i.test(lowerName);
+};
+
+export const isPdfFile = (file) => {
+  const lowerName = getFileName(file).toLowerCase();
+  return file?.type === 'application/pdf' || lowerName.endsWith('.pdf');
+};
 
 export const getFileKey = (file) => `${file.name}_${file.size}_${file.lastModified}`;
 
 export const buildPreviewItem = (file) => {
+  const common = {
+    key: getFileKey(file),
+    name: file.name,
+    url: URL.createObjectURL(file),
+  };
+
   if (isImageFile(file)) {
     return {
-      key: getFileKey(file),
-      name: file.name,
+      ...common,
       type: 'image',
-      url: URL.createObjectURL(file),
+    };
+  }
+
+  if (isPdfFile(file)) {
+    return {
+      ...common,
+      type: 'pdf',
     };
   }
 
   return {
-    key: getFileKey(file),
-    name: file.name,
-    type: 'pdf',
-    url: '',
+    ...common,
+    type: 'unknown',
   };
 };
 
